@@ -33,23 +33,27 @@
 
 /* Comment this out to disable prints and save space */
 #define BLYNK_PRINT Serial
+// #define BLYNK_DEBUG        // Optional, this enables more detailed prints
 
 
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
-// библиотека для работы с датчиком освещённости (Troyka-модуль)
-#include <TroykaLight.h>
 
-// подключим необходимые библиотеки
+#include <TroykaLight.h> // библиотека для работы с датчиком освещённости (Troyka-модуль)
+
+// подключим необходимые библиотеки для работы с датчиком температуры
 #include <OneWire.h>
 #include <DallasTemperature.h>
- 
-// сигнальный провод подключен к 2 пину на Arduino
+
+// сигнальный провод датчика температуры подключен к 2 пину на Arduino
 #define ONE_WIRE_BUS 2
- 
+
+// реле с лампочкой подключено к пину 1
+#define RELAY_PIN 1
+
 // настроим библиотеку 1-Wire для связи с датчиком
 OneWire oneWire(ONE_WIRE_BUS);
- 
+
 // создадим объект для работы с библиотекой DallasTemperature
 DallasTemperature sensors(&oneWire);
 
@@ -59,17 +63,37 @@ TroykaLight sensorLight(A0);
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-  char auth[] = "cae89ee037194e0a97a6522bb97392d0";
+char auth[] = "cae89ee037194e0a97a6522bb97392d0";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-//char ssid[] = "Rus";
-//char pass[] = "12345670";
+char ssid[] = "Rus";
+char pass[] = "12345670";
 
-char ssid[] = "Unit_WiFi";
-char pass[] = "rMW4tAux9U5H";
+//char ssid[] = "Unit_WiFi";
+//char pass[] = "rMW4tAux9U5H";
 
-BlynkTimer timer; // Create a Timer object called "timer"! 
+BlynkTimer timer; // Create a Timer object called "timer"!
+// WidgetLED led1(0);
+
+BLYNK_WRITE(V0)
+{
+  int value = param.asInt(); // Get value as integer
+
+//  // The param can contain multiple values, in such case:
+//  int x = param[0].asInt();
+//  int y = param[1].asInt();
+//
+  Serial.print("Value is ");
+  Serial.print(value);
+  // if (value)
+  //   led1.off();
+  // else
+  //   led1.on();
+
+//  digitalWrite(RELAY_PIN, value);       // turn on pullup resistors
+  // digitalWrite(RELAY_PIN, value);       // turn on pullup resistors
+}
 
 void setup()
 {
@@ -80,8 +104,11 @@ void setup()
   // You can also specify server:
   //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 80);
   //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
-  
-  timer.setInterval(1000L, sendUptime); //  Here you set interval (1sec) and which function to call 
+
+  timer.setInterval(1000L, sendUptime); //  Here you set interval (1sec) and which function to call
+
+//  pinMode(RELAY_PIN, OUTPUT);
+//  digitalWrite(RELAY_PIN, LOW);
 }
 
 
@@ -93,7 +120,7 @@ void sendUptime()
   // Don't send more that 10 values per second
 
 //  Blynk.virtualWrite(V5, millis() / 1000);
-  
+
   // считывание данных с датчика освещённости
   sensorLight.read();
   // вывод показателей сенсора освещённости в люксах
@@ -101,9 +128,9 @@ void sendUptime()
   Serial.print(sensorLight.getLightLux());
   Serial.print(" Lx\n");
 
-  Blynk.virtualWrite(V6, sensorLight.getLightLux());
+  Blynk.virtualWrite(V1, sensorLight.getLightLux());
 
-  
+
   // отправляем запрос на измерение температуры
   sensors.requestTemperatures();
   // покажем температуру в мониторе Serial порта

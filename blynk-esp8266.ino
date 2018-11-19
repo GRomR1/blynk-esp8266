@@ -23,7 +23,7 @@ DallasTemperature sensorTemp(&oneWire);
 TroykaLight sensorLight(A0);
 
 // Токен авторизации из приложения (Auth Token)
-char auth[] = "cae89ee037194e0a97a6522bb97392d0";
+char auth[] = "31340d84e905466daad8dcbc2f1d0ada";
 
 // Данные точки доступа WiFi
 char ssid[] = "Rus";
